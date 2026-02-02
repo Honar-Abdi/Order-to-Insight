@@ -1,0 +1,147 @@
+Query 1
+
+SELECT
+  COUNT(*) AS orders_total,
+  SUM(CASE WHEN order_status = 'completed' THEN 1 ELSE 0 END) AS orders_completed,
+  SUM(CASE WHEN order_status = 'cancelled' THEN 1 ELSE 0 END) AS orders_cancelled,
+  SUM(CASE WHEN order_status = 'refunded' THEN 1 ELSE 0 END) AS orders_refunded,
+  ROUND(SUM(CASE WHEN order_status = 'completed' THEN order_amount ELSE 0 END), 2) AS revenue_completed
+FROM fact_orders
+
+ orders_total  orders_completed  orders_cancelled  orders_refunded  revenue_completed
+         5000            4462.0             400.0            138.0           662793.0
+
+------------------------------------------------------------
+
+Query 2
+
+SELECT
+  order_date,
+  ROUND(revenue_completed, 2) AS revenue_completed,
+  orders_total,
+  orders_completed
+FROM fact_daily_revenue
+ORDER BY order_date
+
+order_date  revenue_completed  orders_total  orders_completed
+2025-12-04             7467.0           110              92.0
+2025-12-05            26691.0           206             182.0
+2025-12-06            27089.5           206             181.0
+2025-12-07            28177.5           205             186.0
+2025-12-08            27569.5           206             183.0
+2025-12-09            26296.0           206             180.0
+2025-12-10            26005.0           205             178.0
+2025-12-11            28304.0           206             184.0
+2025-12-12            27449.0           206             178.0
+2025-12-13            28245.0           206             186.0
+2025-12-14            27810.0           205             186.0
+2025-12-15            26731.5           206             177.0
+2025-12-16            28420.0           206             188.0
+2025-12-17            28180.5           205             184.0
+2025-12-18            28067.5           206             183.0
+2025-12-19            27875.5           206             182.0
+2025-12-20            28509.0           206             186.0
+2025-12-21            25307.5           205             184.0
+2025-12-22            27086.0           206             188.0
+2025-12-23            26477.0           206             185.0
+2025-12-24            26933.5           205             187.0
+2025-12-25            27117.5           206             189.0
+2025-12-26            27528.5           206             185.0
+2025-12-27            26479.0           206             180.0
+2025-12-28            26976.5           158             148.0
+
+------------------------------------------------------------
+
+Query 3
+
+SELECT
+  ROUND(AVG(order_amount), 2) AS avg_order_value_completed
+FROM fact_orders
+WHERE order_status = 'completed'
+
+ avg_order_value_completed
+                    148.54
+
+------------------------------------------------------------
+
+Query 4
+
+SELECT
+  SUM(dq_completed_missing_payment_flag) AS completed_missing_payment,
+  SUM(dq_cancelled_has_shipment_flag) AS cancelled_has_shipment
+FROM fact_orders
+
+ completed_missing_payment  cancelled_has_shipment
+                     124.0                     7.0
+
+------------------------------------------------------------
+
+Query 5
+
+SELECT
+  customer_id,
+  ROUND(SUM(order_amount), 2) AS revenue_completed
+FROM fact_orders
+WHERE order_status = 'completed'
+GROUP BY customer_id
+ORDER BY revenue_completed DESC
+LIMIT 10
+
+customer_id  revenue_completed
+       None             3234.0
+     C10197             2068.5
+     C10196             2058.0
+     C10195             2047.5
+     C10193             2026.5
+     C10192             2016.0
+     C10191             2005.5
+     C10190             1995.0
+     C10187             1963.5
+     C10180             1890.0
+
+------------------------------------------------------------
+
+Query 6
+
+SELECT
+  ROUND(AVG(DATEDIFF('minute', payment_event_ts, shipped_event_ts)), 2) AS avg_minutes_payment_to_ship,
+  MIN(DATEDIFF('minute', payment_event_ts, shipped_event_ts)) AS min_minutes_payment_to_ship,
+  MAX(DATEDIFF('minute', payment_event_ts, shipped_event_ts)) AS max_minutes_payment_to_ship
+FROM fact_orders
+WHERE order_status = 'completed'
+  AND payment_event_ts IS NOT NULL
+  AND shipped_event_ts IS NOT NULL
+
+ avg_minutes_payment_to_ship  min_minutes_payment_to_ship  max_minutes_payment_to_ship
+                       237.0                          237                          237
+
+------------------------------------------------------------
+
+Query 7
+
+SELECT
+  COUNT(*) AS orders_without_events
+FROM fact_orders
+WHERE created_event_ts IS NULL
+  AND payment_event_ts IS NULL
+  AND shipped_event_ts IS NULL
+  AND cancelled_event_ts IS NULL
+
+ orders_without_events
+                     0
+
+------------------------------------------------------------
+
+Query 8
+
+SELECT
+  ROUND(100.0 * SUM(CASE WHEN created_event_ts IS NOT NULL THEN 1 ELSE 0 END) / COUNT(*), 2) AS pct_with_created_event,
+  ROUND(100.0 * SUM(CASE WHEN payment_event_ts IS NOT NULL THEN 1 ELSE 0 END) / COUNT(*), 2) AS pct_with_payment_event,
+  ROUND(100.0 * SUM(CASE WHEN shipped_event_ts IS NOT NULL THEN 1 ELSE 0 END) / COUNT(*), 2) AS pct_with_shipped_event,
+  ROUND(100.0 * SUM(CASE WHEN cancelled_event_ts IS NOT NULL THEN 1 ELSE 0 END) / COUNT(*), 2) AS pct_with_cancelled_event
+FROM fact_orders
+
+ pct_with_created_event  pct_with_payment_event  pct_with_shipped_event  pct_with_cancelled_event
+                  100.0                   89.48                   89.38                       8.0
+
+------------------------------------------------------------
