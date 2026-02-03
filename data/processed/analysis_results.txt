@@ -1,54 +1,130 @@
 Query 1
 
 SELECT
-  COUNT(*) AS orders_total,
+  COUNT(*) AS orders_total,                                   -- tilausten kokonaismäärä
   SUM(CASE WHEN order_status = 'completed' THEN 1 ELSE 0 END) AS orders_completed,
   SUM(CASE WHEN order_status = 'cancelled' THEN 1 ELSE 0 END) AS orders_cancelled,
   SUM(CASE WHEN order_status = 'refunded' THEN 1 ELSE 0 END) AS orders_refunded,
-  ROUND(SUM(CASE WHEN order_status = 'completed' THEN order_amount ELSE 0 END), 2) AS revenue_completed
+  ROUND(
+    SUM(CASE WHEN order_status = 'completed' THEN order_amount ELSE 0 END),
+    2
+  ) AS revenue_completed                                      -- toteutunut liikevaihto
 FROM fact_orders
 
  orders_total  orders_completed  orders_cancelled  orders_refunded  revenue_completed
-         5000            4462.0             400.0            138.0           662793.0
+        20000           17848.0            1600.0            552.0          2638001.0
 
 ------------------------------------------------------------
 
 Query 2
 
 SELECT
-  order_date,
-  ROUND(revenue_completed, 2) AS revenue_completed,
-  orders_total,
-  orders_completed
+  order_date,                                                 -- päivämäärä
+  ROUND(revenue_completed, 2) AS revenue_completed,           -- toteutunut liikevaihto
+  orders_total,                                               -- tilausten määrä
+  orders_completed                                            -- toteutuneet tilaukset
 FROM fact_daily_revenue
 ORDER BY order_date
 
 order_date  revenue_completed  orders_total  orders_completed
-2025-12-04             7467.0           110              92.0
-2025-12-05            26691.0           206             182.0
-2025-12-06            27089.5           206             181.0
-2025-12-07            28177.5           205             186.0
-2025-12-08            27569.5           206             183.0
-2025-12-09            26296.0           206             180.0
-2025-12-10            26005.0           205             178.0
-2025-12-11            28304.0           206             184.0
-2025-12-12            27449.0           206             178.0
-2025-12-13            28245.0           206             186.0
-2025-12-14            27810.0           205             186.0
-2025-12-15            26731.5           206             177.0
-2025-12-16            28420.0           206             188.0
-2025-12-17            28180.5           205             184.0
-2025-12-18            28067.5           206             183.0
-2025-12-19            27875.5           206             182.0
-2025-12-20            28509.0           206             186.0
-2025-12-21            25307.5           205             184.0
-2025-12-22            27086.0           206             188.0
-2025-12-23            26477.0           206             185.0
-2025-12-24            26933.5           205             187.0
-2025-12-25            27117.5           206             189.0
-2025-12-26            27528.5           206             185.0
-2025-12-27            26479.0           206             180.0
-2025-12-28            26976.5           158             148.0
+2025-12-05             9638.0           120             111.0
+2025-12-06            27052.5           206             181.0
+2025-12-07            29062.5           206             190.0
+2025-12-08            28080.0           206             189.0
+2025-12-09            28054.5           205             186.0
+2025-12-10            28314.0           206             187.0
+2025-12-11            26059.0           206             177.0
+2025-12-12            26828.0           205             179.0
+2025-12-13            27461.0           206             185.0
+2025-12-14            28793.5           206             191.0
+2025-12-15            28832.0           206             188.0
+2025-12-16            28589.5           205             187.0
+2025-12-17            28740.0           206             184.0
+2025-12-18            27943.0           206             184.0
+2025-12-19            27516.0           205             179.0
+2025-12-20            27803.5           206             196.0
+2025-12-21            27116.5           206             185.0
+2025-12-22            27561.5           206             186.0
+2025-12-23            25775.0           205             177.0
+2025-12-24            26733.5           206             183.0
+2025-12-25            27120.5           206             186.0
+2025-12-26            26644.0           205             185.0
+2025-12-27            27352.0           206             188.0
+2025-12-28            26934.5           206             185.0
+2025-12-29            25932.0           206             182.0
+2025-12-30            27286.0           205             181.0
+2025-12-31            26756.5           206             186.0
+2026-01-01            27750.5           206             187.0
+2026-01-02            27906.0           205             186.0
+2026-01-03            27565.0           206             185.0
+2026-01-04            26313.0           206             182.0
+2026-01-05            28149.0           206             185.0
+2026-01-06            27890.5           205             191.0
+2026-01-07            27411.5           206             184.0
+2026-01-08            27575.0           206             185.0
+2026-01-09            26139.5           205             179.0
+2026-01-10            28320.5           206             191.0
+2026-01-11            27244.0           206             183.0
+2026-01-12            27929.0           206             189.0
+2026-01-13            25823.5           205             176.0
+2026-01-14            27917.5           206             187.0
+2026-01-15            27349.5           206             187.0
+2026-01-16            26479.5           205             179.0
+2026-01-17            28500.0           206             185.0
+2026-01-18            27471.0           206             181.0
+2026-01-19            27330.0           206             180.0
+2026-01-20            26115.0           205             175.0
+2026-01-21            28244.0           206             184.0
+2026-01-22            28345.5           206             191.0
+2026-01-23            28273.5           205             187.0
+2026-01-24            26476.0           206             182.0
+2026-01-25            26857.5           206             188.0
+2026-01-26            24652.0           206             173.0
+2026-01-27            26336.0           205             182.0
+2026-01-28            26120.5           206             179.0
+2026-01-29            25385.5           206             178.0
+2026-01-30            24803.0           205             172.0
+2026-01-31            26189.0           206             182.0
+2026-02-01            27333.5           206             184.0
+2026-02-02            25733.0           206             180.0
+2026-02-03            26068.0           205             183.0
+2026-02-04            26262.0           206             183.0
+2026-02-05            27086.5           206             184.0
+2026-02-06            26585.5           205             176.0
+2026-02-07            26162.0           206             179.0
+2026-02-08            26568.5           206             180.0
+2026-02-09            25634.0           206             172.0
+2026-02-10            28364.5           205             187.0
+2026-02-11            26450.5           206             182.0
+2026-02-12            26279.0           206             176.0
+2026-02-13            27219.0           205             181.0
+2026-02-14            26274.0           206             184.0
+2026-02-15            26902.0           206             181.0
+2026-02-16            27461.5           206             186.0
+2026-02-17            28074.0           205             183.0
+2026-02-18            27924.5           206             184.0
+2026-02-19            27767.5           206             184.0
+2026-02-20            29088.5           205             193.0
+2026-02-21            27339.5           206             180.0
+2026-02-22            27690.5           206             188.0
+2026-02-23            26679.0           206             179.0
+2026-02-24            26727.0           205             181.0
+2026-02-25            28286.5           206             185.0
+2026-02-26            28887.0           206             191.0
+2026-02-27            27995.0           205             185.0
+2026-02-28            26649.0           206             184.0
+2026-03-01            27120.0           206             192.0
+2026-03-02            26059.0           206             176.0
+2026-03-03            26280.0           205             185.0
+2026-03-04            26946.0           206             189.0
+2026-03-05            26329.0           206             184.0
+2026-03-06            26553.5           205             182.0
+2026-03-07            26862.0           206             181.0
+2026-03-08            25759.5           206             181.0
+2026-03-09            27543.5           206             184.0
+2026-03-10            25570.0           205             180.0
+2026-03-11            27352.0           206             188.0
+2026-03-12            23294.0           131             118.0
 
 ------------------------------------------------------------
 
@@ -60,19 +136,19 @@ FROM fact_orders
 WHERE order_status = 'completed'
 
  avg_order_value_completed
-                    148.54
+                     147.8
 
 ------------------------------------------------------------
 
 Query 4
 
 SELECT
-  SUM(dq_completed_missing_payment_flag) AS completed_missing_payment,
-  SUM(dq_cancelled_has_shipment_flag) AS cancelled_has_shipment
+  SUM(dq_completed_missing_payment_flag) AS completed_missing_payment,   -- toteutunut tilaus ilman maksutapahtumaa
+  SUM(dq_cancelled_has_shipment_flag) AS cancelled_has_shipment           -- peruttu tilaus, jolla on toimitustapahtuma
 FROM fact_orders
 
  completed_missing_payment  cancelled_has_shipment
-                     124.0                     7.0
+                     477.0                    31.0
 
 ------------------------------------------------------------
 
@@ -88,23 +164,26 @@ ORDER BY revenue_completed DESC
 LIMIT 10
 
 customer_id  revenue_completed
-       None             3234.0
-     C10197             2068.5
-     C10196             2058.0
-     C10195             2047.5
-     C10193             2026.5
-     C10192             2016.0
-     C10191             2005.5
-     C10190             1995.0
-     C10187             1963.5
-     C10180             1890.0
+       None            13906.5
+     C10193             7237.5
+     C10797             7092.0
+     C10389             7087.5
+     C10788             7050.0
+     C10795             7020.0
+     C10394             6984.0
+     C10591             6866.0
+     C10199             6865.5
+     C10398             6831.0
 
 ------------------------------------------------------------
 
 Query 6
 
 SELECT
-  ROUND(AVG(DATEDIFF('minute', payment_event_ts, shipped_event_ts)), 2) AS avg_minutes_payment_to_ship,
+  ROUND(
+    AVG(DATEDIFF('minute', payment_event_ts, shipped_event_ts)),
+    2
+  ) AS avg_minutes_payment_to_ship,                            -- keskimääräinen aika
   MIN(DATEDIFF('minute', payment_event_ts, shipped_event_ts)) AS min_minutes_payment_to_ship,
   MAX(DATEDIFF('minute', payment_event_ts, shipped_event_ts)) AS max_minutes_payment_to_ship
 FROM fact_orders
@@ -135,13 +214,25 @@ WHERE created_event_ts IS NULL
 Query 8
 
 SELECT
-  ROUND(100.0 * SUM(CASE WHEN created_event_ts IS NOT NULL THEN 1 ELSE 0 END) / COUNT(*), 2) AS pct_with_created_event,
-  ROUND(100.0 * SUM(CASE WHEN payment_event_ts IS NOT NULL THEN 1 ELSE 0 END) / COUNT(*), 2) AS pct_with_payment_event,
-  ROUND(100.0 * SUM(CASE WHEN shipped_event_ts IS NOT NULL THEN 1 ELSE 0 END) / COUNT(*), 2) AS pct_with_shipped_event,
-  ROUND(100.0 * SUM(CASE WHEN cancelled_event_ts IS NOT NULL THEN 1 ELSE 0 END) / COUNT(*), 2) AS pct_with_cancelled_event
+  ROUND(
+    100.0 * SUM(CASE WHEN created_event_ts IS NOT NULL THEN 1 ELSE 0 END) / COUNT(*),
+    2
+  ) AS pct_with_created_event,
+  ROUND(
+    100.0 * SUM(CASE WHEN payment_event_ts IS NOT NULL THEN 1 ELSE 0 END) / COUNT(*),
+    2
+  ) AS pct_with_payment_event,
+  ROUND(
+    100.0 * SUM(CASE WHEN shipped_event_ts IS NOT NULL THEN 1 ELSE 0 END) / COUNT(*),
+    2
+  ) AS pct_with_shipped_event,
+  ROUND(
+    100.0 * SUM(CASE WHEN cancelled_event_ts IS NOT NULL THEN 1 ELSE 0 END) / COUNT(*),
+    2
+  ) AS pct_with_cancelled_event
 FROM fact_orders
 
  pct_with_created_event  pct_with_payment_event  pct_with_shipped_event  pct_with_cancelled_event
-                  100.0                   89.48                   89.38                       8.0
+                  100.0                   89.55                    89.4                       8.0
 
 ------------------------------------------------------------
