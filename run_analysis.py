@@ -23,7 +23,6 @@ def main() -> None:
     sql_text = SQL_PATH.read_text(encoding="utf-8")
     sql_text = strip_sql_comments(sql_text)
 
-    # Split into individual statements by semicolon
     statements = [s.strip() for s in sql_text.split(";") if s.strip()]
 
     lines = []
