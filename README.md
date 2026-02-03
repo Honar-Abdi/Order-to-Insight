@@ -8,7 +8,7 @@ End-to-end data pipeline from raw events to business insights
 This project demonstrates an end-to-end data workflow that combines data engineering and data analytics.  
 It shows how raw, imperfect event and transaction data is ingested, validated, transformed, modeled, and analyzed to support business decision-making.
 
-The focus is on SQL-centric analytics, realistic data engineering practices, and explicit reasoning about what the data does — and does not — support.
+The focus is on SQL-centric analytics, realistic data engineering practices, and explicit reasoning about what the data does and does not support.
 
 Technologies used include SQL, Python, and a lightweight analytical stack suitable for local development.
 
