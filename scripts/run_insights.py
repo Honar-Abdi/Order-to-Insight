@@ -38,6 +38,7 @@ class RevenueMetrics:
     revenue_gap_pct: float
     missing_payment_orders: int
     cancelled_with_shipment_orders: int
+    completed_missing_customer_orders: int
 
 
 def parse_args(argv: list[str]) -> RunContext:
@@ -97,6 +98,17 @@ def fetch_revenue_metrics(con: duckdb.DuckDBPyConnection) -> RevenueMetrics:
         """
     ).fetchone()
 
+    # Tämä mittari selittää miksi asiakaslistoissa voi näkyä NULL/NaN.
+    completed_missing_customer_orders = con.execute(
+        """
+        SELECT
+          COUNT(*)::BIGINT
+        FROM fct_orders
+        WHERE order_status = 'completed'
+          AND customer_id IS NULL
+        """
+    ).fetchone()[0]
+
     revenue_gap = float(completed_revenue) - float(paid_revenue)
     revenue_gap_pct = (
         (revenue_gap / float(completed_revenue) * 100.0)
@@ -113,23 +125,21 @@ def fetch_revenue_metrics(con: duckdb.DuckDBPyConnection) -> RevenueMetrics:
         revenue_gap_pct=revenue_gap_pct,
         missing_payment_orders=int(missing_payment_orders),
         cancelled_with_shipment_orders=int(cancelled_with_shipment_orders),
+        completed_missing_customer_orders=int(completed_missing_customer_orders),
     )
 
 
 def build_interpretation(metrics: RevenueMetrics) -> list[str]:
-    """
-    Muodostaa lyhyen liiketoiminnallisen tulkinnan.
-    """
-
+    """Muodostaa lyhyen tulkinnan raporttiin."""
     lines: list[str] = []
 
     if metrics.completed_revenue > 0:
         lines.append(
-            f"- Completed revenue overstates paid revenue by "
-            f"{metrics.revenue_gap_pct:.2f}% ({metrics.revenue_gap:.2f})."
+            f"- Completed revenue overstates paid revenue by {metrics.revenue_gap_pct:.2f}% "
+            f"({metrics.revenue_gap:.2f})."
         )
     else:
-        lines.append("- Completed revenue is zero. No comparison available.")
+        lines.append("- Completed revenue is zero. No revenue comparison available.")
 
     if metrics.missing_payment_orders > 0:
         lines.append(
@@ -145,13 +155,18 @@ def build_interpretation(metrics: RevenueMetrics) -> list[str]:
     else:
         lines.append("- No cancelled orders have shipment events.")
 
+    if metrics.completed_missing_customer_orders > 0:
+        lines.append(
+            f"- {metrics.completed_missing_customer_orders} completed orders have missing customer identifiers."
+        )
+
     return lines
 
 
 def write_report(ctx: RunContext, metrics: RevenueMetrics) -> None:
-    """Kirjoittaa analyysiraportin tekstitiedostoon."""
-
+    """Kirjoittaa yhteenvedon tekstitiedostoon."""
     generated_at = datetime.now(timezone.utc).isoformat()
+
     interpretation_lines = build_interpretation(metrics)
 
     lines = [
@@ -181,6 +196,7 @@ def write_report(ctx: RunContext, metrics: RevenueMetrics) -> None:
         f"- revenue_gap_pct: {metrics.revenue_gap_pct:.2f}%",
         f"- dq_completed_missing_payment_flag (orders): {metrics.missing_payment_orders}",
         f"- dq_cancelled_has_shipment_flag (orders): {metrics.cancelled_with_shipment_orders}",
+        f"- completed_missing_customer_id (orders): {metrics.completed_missing_customer_orders}",
         "",
         "Business interpretation",
         *interpretation_lines,
@@ -195,9 +211,7 @@ def main(argv: list[str] | None = None) -> None:
     ctx = parse_args(argv or sys.argv[1:])
 
     if not WAREHOUSE_DB.exists():
-        raise FileNotFoundError(
-            "warehouse.duckdb not found. Run the pipeline first."
-        )
+        raise FileNotFoundError("warehouse.duckdb not found. Run the pipeline first.")
 
     con = duckdb.connect(str(WAREHOUSE_DB))
     try:

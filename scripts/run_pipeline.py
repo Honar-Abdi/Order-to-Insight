@@ -6,6 +6,7 @@ Vaiheet
 2) Ajaa ingestion + DQ ja lataa DuckDB:hen
 3) Ajaa transformations ja rakentaa marts-taulut
 4) Ajaa analyysin ja kirjoittaa tulokset tiedostoon
+5) Ajaa SQL-insights ja lisää tulokset samaan raporttiin
 """
 
 from __future__ import annotations
@@ -48,6 +49,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     p.add_argument("--skip-ingestion", action="store_true")
     p.add_argument("--skip-transformations", action="store_true")
     p.add_argument("--skip-insights", action="store_true")
+    p.add_argument("--skip-sql-insights", action="store_true")
 
     return p.parse_args(argv)
 
@@ -89,6 +91,22 @@ def main(argv: list[str] | None = None) -> None:
             [
                 sys.executable,
                 "scripts/run_insights.py",
+                "--dq-profile",
+                args.dq_profile,
+                "--n",
+                str(args.n),
+                "--seed",
+                str(args.seed),
+                "--mode",
+                args.mode,
+            ]
+        )
+
+    if not args.skip_insights and not args.skip_sql_insights:
+        run_cmd(
+            [
+                sys.executable,
+                "scripts/run_insights_sql.py",
                 "--dq-profile",
                 args.dq_profile,
                 "--n",
